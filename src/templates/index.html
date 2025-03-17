@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents search</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <!-- Include Font Awesome from a CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<style>
+    body {
+        margin: 0; /* Remove default margin */
+        height: 100vh; /* Make sure body takes the full viewport height */
+        background-image: url('/static/background.jpg');
+        background-size: cover; /* Ensures the image covers the whole screen */
+        background-position: center; /* Centers the image */
+        background-repeat: no-repeat; /* Prevents tiling */
+        background-attachment: fixed;
+    }
+</style>
+<body>
+
+<div class="wrapper">
+    <div class="container">
+        <h1>How can I help you! </h1>
+        <form action="/search" method="post">
+            <div class="form-group">
+                <img src="/static/chatbot.jpg" alt="Logo" class="logo">
+                <input type="text" id="query" name="query" placeholder="Search request" required>
+                <button type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+
+        {% if results %}
+        <h2>Results for: "{{ query }}"</h2>
+        <ul class="results-list">
+            {% for item in results %}
+            <li>{{ item | safe }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        {% if query %}
+        <p>No results found for: "{{ query }}"</p>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>
