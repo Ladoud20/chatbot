@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Search</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            color: #0a192f;
+            background-image: url('/static/car.jpg'); /* Replace with your desired image path */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .wrapper {
+            background: rgba(255, 255, 255, 0.8); /* Slightly transparent background */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            color: #172b4d;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        /* Smaller input and button */
+        input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            font-size: 14px;
+            width: 70%; /* Smaller width */
+        }
+
+        button {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button i {
+            font-size: 18px; /* Make the icon bigger */
+        }
+
+        button:hover {
+            background: #388e3c;
+        }
+
+        /* Style the result container */
+        .results-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding-right: 10px;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: hidden;
+            margin-right: 0;
+        }
+
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .results-list p {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Smooth fade-in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* For responsive design, make sure the form and results fit on small screens */
+        @media (max-width: 600px) {
+            .form-group {
+                flex-direction: column;
+            }
+
+            input[type="text"] {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <h1>How can I help you? </h1>
+        <form action="/search" method="post">
+            <div class="form-group">
+                <img src="/static/chatbot.jpg" alt="Logo" class="logo">
+                <input type="text" id="query" name="query" placeholder="Search request" required>
+                <button type="submit">
+                    <i class="fas fa-search"></i> <!-- Search icon inside the button -->
+                </button>
+            </div>
+        </form>
+
+        {% if results %}
+        <h2>Results for: "{{ query }}"</h2>
+        <div class="results-container">
+            <ul class="results-list">
+                {% for item in results %}
+                <li>
+                    <strong>Auto Model:</strong> {{ item.auto_model }}<br>
+                    <strong>Incident Date:</strong> {{ item.incident_date }}<br>
+                    <strong>Total Claim Amount:</strong> {{ item.total_claim_amount }}$<br>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        {% if query %}
+        <p>No results found for: "{{ query }}"</p>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

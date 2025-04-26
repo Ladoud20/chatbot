@@ -16,28 +16,34 @@ from src.retrieving.faiss_search import FaissSearch
 
 
 # Load the csv file
-data_path = "../../data/books.csv"
+data_path = "../../data/insurance_claims.csv"
 df = pd.read_csv(data_path)
 
 # Create an overview column, that will be used for retrieval
 df['overview'] = (
-        'Title: ' + df['title'] + '\n' +
-        'Authors: ' + df['authors'] + '\n' +
-        'Categories: ' + df['categories'] + '\n' +
-        'Description: ' + df['description']
+        'Policy Number: ' + df['policy_number'].astype(str) + '\n' +
+        'Customer Age: ' + df['age'].astype(str) + '\n' +
+        'Policy State: ' + df['policy_state'] + '\n' +
+        'Annual Premium: ' + df['policy_annual_premium'].astype(str) + '\n' +
+        'Vehicle: ' + df['auto_make'] + ' ' + df['auto_model'] + ' (' + df['auto_year'].astype(str) + ')\n' +
+        'Incident Date: ' + df['incident_date'] + '\n' +
+        'Incident Type: ' + df['incident_type'] + '\n' +
+        'Severity: ' + df['incident_severity'] + '\n' +
+        'Total Claim Amount: ' + df['total_claim_amount'].astype(str) + '\n' +
+        'Fraud Reported: ' + df['fraud_reported']
 )
 
 df['index'] = df.index
 
-df = df[['index', 'title', 'authors', 'categories', 'description', 'overview']]
+df = df[['index', 'policy_number', 'age', 'policy_state', 'auto_make', 'auto_model', 'incident_date', 'incident_type', 'total_claim_amount', 'fraud_reported', 'overview']]
 
 # Create a text list from overview column
 # This will be used for retrieval
 texts = df['overview'].tolist()
 
 # Create a metadata dict about the information we want to return
-# We will return the title, author and description
-metadatas = ['title', 'authors', 'description']
+# We will return the auto_model, incident_date and total_claim_amount
+metadatas = ['auto_model', 'incident_date', 'total_claim_amount']
 
 
 
@@ -45,7 +51,7 @@ embedding_model_path = "../../models/sentence_transformer_en"
 model = SentenceTransEmbedding(embedding_model_path, device='cpu')
 
 index_path = "../../data/database/faiss"
-index_name = "HNSW_book_index.index"
+index_name = "HNSW_car_index.index"
 index_type = "HNSW"
 
 HNSW_search = FaissSearch(index_name=index_name,
@@ -81,7 +87,7 @@ def read_root():
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index1.html", {"request": request})
+    return templates.TemplateResponse("index_car.html", {"request": request})
 
 @app.post("/search")
 async def search(request: Request, query: str= Form(...)):
@@ -95,34 +101,42 @@ async def search(request: Request, query: str= Form(...)):
     candidates_idx = set(list(semantic_indices) + list(bm25_indices))
     doc_candidates = []
 
-    for idx in candidates_idx:
-        if idx < len(df):  # Ensure idx is valid within DataFrame bounds
-            doc = df.loc[idx, 'overview']
-            doc_candidates.append(doc)
+    for _, idx in enumerate(candidates_idx):
+        doc = df.loc[idx, 'overview']
+        doc_candidates.append(doc)
+
+
 
     _, top_n_index = reranker.reranker(
         query=query,
          doc_candidates=doc_candidates,
          candidates_idx=candidates_idx,
-         top_n=5
+         top_n=2
      )
     results = []
     for i, result in enumerate(top_n_index):
+
         idx = int(top_n_index[i])
+
+
+
         metadata_info = {
-            "title": df.loc[idx, 'title'],
-            "authors": df.loc[idx, 'authors'],
-            "description": df.loc[idx, 'description']
+            "auto_model": df.loc[idx, 'auto_model'],
+            "incident_date": df.loc[idx, 'incident_date'],
+            "total_claim_amount": int(df.loc[idx, 'total_claim_amount'])
         }
+        print(metadata_info)
         results.append(metadata_info)
 
-        #use prompt to get the final answer
-        """
-        prompt = here I have to write what I want to get by providing the query and the final results from reranker
-        openai.api_key = api_key
-        answer = get_gpt_response(prompt)
-        """
-        return templates.TemplateResponse("index1.html", {"request": request, "query": query, "results": results})
+    print(top_n_index)
+    print(results)
+    #use prompt to get the final answer
+    """
+    prompt = here I have to write what I want to get by providing the query and the final results from reranker
+    openai.api_key = api_key
+    answer = get_gpt_response(prompt)
+    """
+    return templates.TemplateResponse("index_car.html", {"request": request, "query": query, "results": results})
 
 
 
